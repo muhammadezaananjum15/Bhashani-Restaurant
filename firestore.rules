@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if request is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user is the resource owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if the current user has the admin role in Firestore
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // USERS COLLECTION
+    // ─────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Customers can read their own profile; Admins can read all profiles
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // New users can create their profile on registration
+      // Crucial: Normal registrations CANNOT set their role to 'admin'
+      allow create: if isOwner(userId) && 
+        (request.resource.data.role == 'customer' || isAdmin());
+
+      // Customers can update their own phone, name, address,
+      // but CANNOT escalate their privileges (role cannot be changed by customer)
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+
+      // Only administrators can delete a user record
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // ORDERS COLLECTION
+    // ─────────────────────────────────────────────────────────────
+    match /orders/{orderId} {
+      // Customers can only read orders where they are the owner; Admins can read all orders
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // Logged-in customers can place orders:
+      // - Must be authenticated
+      // - Order's userId must strictly match request.auth.uid
+      // - Initial status must be 'Pending'
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'Pending';
+
+      // Only restaurant admin can update orders (status updates: Confirmed, Preparing, Delivered, etc.)
+      allow update: if isAdmin();
+
+      // Only restaurant admin can delete orders
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // PRODUCTS / RESTAURANT DATA (OPTIONAL SYNC)
+    // ─────────────────────────────────────────────────────────────
+    match /products/{productId} {
+      // Anyone can browse products
+      allow read: if true;
+      // Only admin can add/edit/remove products
+      allow write: if isAdmin();
+    }
+  }
+}

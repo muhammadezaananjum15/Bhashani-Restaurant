@@ -4,14 +4,16 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Phone, ShoppingBag, Menu, X, ArrowUpRight } from 'lucide-react';
+import { Phone, ShoppingBag, Menu, X, ArrowUpRight, User as UserIcon, LogOut, ShieldCheck, ClipboardList } from 'lucide-react';
 import { RESTAURANT_INFO } from '@/data/menuData';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export const Header: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { totalItems, setIsCartOpen } = useCart();
+  const { user, userProfile, isAdmin, signOut } = useAuth();
 
   const navLinks = [
     { label: 'Home', href: '/' },
@@ -150,7 +152,7 @@ export const Header: React.FC = () => {
             style={{
               display: 'none',
               alignItems: 'center',
-              gap: '32px',
+              gap: '26px',
             }}
             className="desktop-menu"
           >
@@ -188,10 +190,52 @@ export const Header: React.FC = () => {
                 </Link>
               );
             })}
+
+            {user && (
+              <Link
+                href="/orders"
+                style={{
+                  color: pathname === '/orders' ? '#d4a359' : '#cbd5e1',
+                  textDecoration: 'none',
+                  fontSize: '0.92rem',
+                  fontWeight: pathname === '/orders' ? 700 : 500,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                <ClipboardList size={15} style={{ color: '#d4a359' }} />
+                <span>My Orders</span>
+              </Link>
+            )}
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                style={{
+                  color: '#f3cf8a',
+                  textDecoration: 'none',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  backgroundColor: 'rgba(212, 163, 89, 0.15)',
+                  border: '1px solid rgba(212, 163, 89, 0.4)',
+                  borderRadius: '6px',
+                  padding: '5px 10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <ShieldCheck size={14} style={{ color: '#d4a359' }} />
+                <span>Admin Panel</span>
+              </Link>
+            )}
           </nav>
 
           {/* Right Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
               aria-label="View Cart"
@@ -235,6 +279,83 @@ export const Header: React.FC = () => {
               )}
             </button>
 
+            {/* Auth Buttons for Desktop */}
+            <div className="desktop-menu" style={{ display: 'none', alignItems: 'center', gap: '8px' }}>
+              {user ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Link
+                    href="/account"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderRadius: '8px',
+                      padding: '8px 14px',
+                      color: '#f8fafc',
+                      textDecoration: 'none',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <UserIcon size={14} style={{ color: '#d4a359' }} />
+                    <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {userProfile?.name?.split(' ')[0] || 'Account'}
+                    </span>
+                  </Link>
+
+                  <button
+                    onClick={() => signOut()}
+                    title="Sign Out"
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '8px',
+                      width: '38px',
+                      height: '38px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      transition: 'color 0.2s',
+                    }}
+                  >
+                    <LogOut size={15} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Link
+                    href="/login"
+                    style={{
+                      color: '#cbd5e1',
+                      textDecoration: 'none',
+                      fontSize: '0.86rem',
+                      fontWeight: 600,
+                      padding: '8px 14px',
+                      borderRadius: '6px',
+                      transition: 'color 0.2s',
+                    }}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="btn-solid-crimson"
+                    style={{
+                      padding: '8px 14px',
+                      fontSize: '0.84rem',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <a
               href={`https://wa.me/${RESTAURANT_INFO.phoneClean}?text=Hello%20Bhashani%20Pakwan%20Center!%20I%20would%20like%20to%20order.`}
               target="_blank"
@@ -247,6 +368,7 @@ export const Header: React.FC = () => {
               <ArrowUpRight size={15} />
             </a>
 
+            {/* Mobile Menu Trigger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
@@ -280,6 +402,85 @@ export const Header: React.FC = () => {
               gap: '16px',
             }}
           >
+            {/* User status card on mobile */}
+            {user ? (
+              <div
+                style={{
+                  backgroundColor: 'rgba(16, 25, 56, 0.8)',
+                  border: '1px solid rgba(212, 163, 89, 0.3)',
+                  borderRadius: '8px',
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.92rem' }}>
+                    {userProfile?.name || 'Customer'}
+                  </div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.78rem' }}>
+                    {user.email}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    signOut();
+                    setMobileOpen(false);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#f87171',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <LogOut size={14} /> Sign Out
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    flex: 1,
+                    textAlign: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: '6px',
+                    padding: '9px',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="btn-solid-crimson"
+                  style={{
+                    flex: 1,
+                    textAlign: 'center',
+                    padding: '9px',
+                    fontSize: '0.88rem',
+                    textDecoration: 'none',
+                    justifyContent: 'center',
+                  }}
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -295,13 +496,74 @@ export const Header: React.FC = () => {
                 {link.label}
               </Link>
             ))}
+
+            {user && (
+              <>
+                <Link
+                  href="/orders"
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    color: pathname === '/orders' ? '#d4a359' : '#e2e8f0',
+                    textDecoration: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <ClipboardList size={16} style={{ color: '#d4a359' }} />
+                  <span>My Orders</span>
+                </Link>
+                <Link
+                  href="/account"
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    color: pathname === '/account' ? '#d4a359' : '#e2e8f0',
+                    textDecoration: 'none',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <UserIcon size={16} style={{ color: '#d4a359' }} />
+                  <span>Account Details</span>
+                </Link>
+              </>
+            )}
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  color: '#f3cf8a',
+                  textDecoration: 'none',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  backgroundColor: 'rgba(212, 163, 89, 0.12)',
+                  border: '1px solid rgba(212, 163, 89, 0.3)',
+                  borderRadius: '6px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <ShieldCheck size={16} style={{ color: '#d4a359' }} />
+                <span>Admin Dashboard</span>
+              </Link>
+            )}
+
             <div style={{ paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
               <a
                 href={`https://wa.me/${RESTAURANT_INFO.phoneClean}?text=Hello%20Bhashani%20Pakwan%20Center!`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-whatsapp-subtle"
-                style={{ width: '100%' }}
+                style={{ width: '100%', justifyContent: 'center' }}
               >
                 <span>WhatsApp Order ({RESTAURANT_INFO.phone})</span>
               </a>

@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Check, ShoppingBag, MessageCircle, Zap } from 'lucide-react';
-import { MENU_ITEMS, RESTAURANT_INFO } from '@/data/menuData';
+import { MENU_ITEMS, MenuItem, RESTAURANT_INFO } from '@/data/menuData';
 import { useCart } from '@/context/CartContext';
 
 interface HotDealsProps {
@@ -13,7 +13,14 @@ interface HotDealsProps {
 
 export const HotDealsSection: React.FC<HotDealsProps> = ({ isPage = false }) => {
   const { addToCart } = useCart();
+  const [addedDealId, setAddedDealId] = useState<string | null>(null);
   const deals = MENU_ITEMS.filter((item) => item.category === 'deals');
+
+  const handleAddDeal = (deal: MenuItem) => {
+    addToCart(deal);
+    setAddedDealId(deal.id);
+    setTimeout(() => setAddedDealId(null), 1200);
+  };
 
   return (
     <section
@@ -223,12 +230,26 @@ export const HotDealsSection: React.FC<HotDealsProps> = ({ isPage = false }) => 
                 {/* Buttons */}
                 <div style={{ marginTop: 'auto', display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => addToCart(deal)}
+                    onClick={() => handleAddDeal(deal)}
                     className="btn-solid-crimson"
-                    style={{ flex: 1, padding: '10px 16px', fontSize: '0.88rem' }}
+                    style={{
+                      flex: 1,
+                      padding: '10px 16px',
+                      fontSize: '0.88rem',
+                      backgroundColor: addedDealId === deal.id ? '#1a6f44' : undefined,
+                    }}
                   >
-                    <ShoppingBag size={15} />
-                    <span>Add to Cart</span>
+                    {addedDealId === deal.id ? (
+                      <>
+                        <Check size={15} />
+                        <span>Added to Cart!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag size={15} />
+                        <span>Add to Cart</span>
+                      </>
+                    )}
                   </button>
 
                   <a

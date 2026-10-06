@@ -10,23 +10,15 @@ export const Footer: React.FC = () => {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <footer style={{ position: 'relative', backgroundColor: '#040710', color: '#cbd5e1', overflow: 'hidden' }}>
-      {/* ── Wave entry curvature from ContactSection ── */}
-      <div className="wave-divider" style={{ transform: 'scaleY(-1)', marginBottom: '-2px' }}>
-        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path
-            d="M0,35 C360,75 720,5 1080,50 C1260,72 1380,28 1440,20 L1440,80 L0,80 Z"
-            fill="#040710"
-          />
-          <path
-            d="M0,35 C360,75 720,5 1080,50 C1260,72 1380,28 1440,20"
-            stroke="rgba(212, 163, 89, 0.2)"
-            strokeWidth="1.2"
-            fill="none"
-          />
-        </svg>
-      </div>
-
+    <footer
+      style={{
+        position: 'relative',
+        backgroundColor: '#040710',
+        color: '#cbd5e1',
+        overflow: 'hidden',
+        borderTop: '1px solid rgba(212, 163, 89, 0.15)',
+      }}
+    >
       {/* Ambient glow */}
       <div
         className="ambient-orb orb-crimson"
@@ -40,7 +32,7 @@ export const Footer: React.FC = () => {
       {/* Main Footer Content */}
       <div
         className="container-custom"
-        style={{ position: 'relative', zIndex: 10, paddingTop: '70px', paddingBottom: '30px' }}
+        style={{ position: 'relative', zIndex: 10, paddingTop: '50px', paddingBottom: '30px' }}
       >
         {/* Top divider */}
         <hr className="divider-gold" style={{ marginBottom: '52px' }} />

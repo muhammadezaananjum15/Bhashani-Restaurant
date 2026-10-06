@@ -1,17 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag, Star, Sparkles } from 'lucide-react';
-import { MENU_ITEMS } from '@/data/menuData';
+import { ArrowRight, ShoppingBag, Star, Sparkles, Check } from 'lucide-react';
+import { MENU_ITEMS, MenuItem } from '@/data/menuData';
 import { useCart } from '@/context/CartContext';
 
 export const FeaturedSpecialties: React.FC = () => {
   const { addToCart } = useCart();
+  const [addedId, setAddedId] = useState<string | null>(null);
 
   const featuredIds = ['bbq-beef-bihari-boti', 'bbq-malai-tikka', 'ff-broast-chest', 'ff-zinger-burger'];
   const featuredItems = MENU_ITEMS.filter((item) => featuredIds.includes(item.id));
+
+  const handleAdd = (item: MenuItem) => {
+    addToCart(item);
+    setAddedId(item.id);
+    setTimeout(() => setAddedId(null), 1200);
+  };
 
   return (
     <section
@@ -192,12 +199,25 @@ export const FeaturedSpecialties: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => addToCart(item)}
+                    onClick={() => handleAdd(item)}
                     className="btn-solid-crimson"
-                    style={{ padding: '9px 18px', fontSize: '0.84rem' }}
+                    style={{
+                      padding: '9px 18px',
+                      fontSize: '0.84rem',
+                      backgroundColor: addedId === item.id ? '#1a6f44' : undefined,
+                    }}
                   >
-                    <ShoppingBag size={14} />
-                    <span>Order</span>
+                    {addedId === item.id ? (
+                      <>
+                        <Check size={14} />
+                        <span>Added!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag size={14} />
+                        <span>Order</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

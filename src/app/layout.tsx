@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -55,15 +56,17 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
       <body>
-        <CartProvider>
-          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <Header />
-            <main style={{ flex: 1 }}>{children}</main>
-            <Footer />
-            <CartDrawer />
-            <FloatingActions />
-          </div>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-main)' }}>
+              <Header />
+              <main style={{ flex: 1 }}>{children}</main>
+              <Footer />
+              <CartDrawer />
+              <FloatingActions />
+            </div>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -2,20 +2,34 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { X, Trash2, Plus, Minus, ShoppingBag, Send, MapPin } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, Trash2, Plus, Minus, ShoppingBag, Send, ArrowRight, LogIn, UserPlus, AlertCircle, MapPin } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { RESTAURANT_INFO } from '@/data/menuData';
 
 export const CartDrawer: React.FC = () => {
   const { cart, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, clearCart, subtotal, totalItems } = useCart();
+  const { user } = useAuth();
+  const router = useRouter();
 
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
 
   if (!isCartOpen) return null;
+
+  const handleProceedToCheckout = () => {
+    if (!user) {
+      setShowAuthPrompt(true);
+      return;
+    }
+    setIsCartOpen(false);
+    router.push('/checkout');
+  };
 
   const handleSendWhatsAppOrder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -423,17 +437,96 @@ export const CartDrawer: React.FC = () => {
               </span>
             </div>
 
+            {/* Auth Required Prompt Modal inside CartDrawer */}
+            {showAuthPrompt && (
+              <div
+                style={{
+                  backgroundColor: 'rgba(20, 30, 60, 0.98)',
+                  border: '1px solid rgba(212, 163, 89, 0.4)',
+                  borderRadius: '10px',
+                  padding: '16px',
+                  marginBottom: '14px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gold-light)', fontWeight: 700, fontSize: '0.92rem', marginBottom: '6px' }}>
+                  <AlertCircle size={17} style={{ color: 'var(--gold)' }} />
+                  <span>Account Required to Order</span>
+                </div>
+                <p style={{ color: '#cbd5e1', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '14px' }}>
+                  Please sign in or create an account before placing your order.
+                </p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      setIsCartOpen(false);
+                      router.push('/login?redirect=/checkout');
+                    }}
+                    className="btn-solid-crimson"
+                    style={{ flex: 1, padding: '9px', fontSize: '0.82rem', justifyContent: 'center' }}
+                  >
+                    <LogIn size={14} />
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCartOpen(false);
+                      router.push('/register?redirect=/checkout');
+                    }}
+                    className="btn-outline-gold"
+                    style={{ flex: 1, padding: '9px', fontSize: '0.82rem', justifyContent: 'center' }}
+                  >
+                    <UserPlus size={14} />
+                    <span>Create Account</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowAuthPrompt(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'center',
+                    marginTop: '10px',
+                  }}
+                >
+                  Continue browsing
+                </button>
+              </div>
+            )}
+
+            {/* Primary Action: Proceed to Checkout */}
+            <button
+              onClick={handleProceedToCheckout}
+              className="btn-solid-crimson"
+              style={{
+                width: '100%',
+                padding: '13px',
+                justifyContent: 'center',
+                fontSize: '0.95rem',
+                marginBottom: '8px',
+              }}
+            >
+              <span>Proceed to Checkout</span>
+              <ArrowRight size={16} />
+            </button>
+
+            {/* Secondary Action: WhatsApp Order */}
             <button
               onClick={handleSendWhatsAppOrder}
               className="btn-whatsapp-subtle"
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '10px',
                 justifyContent: 'center',
+                fontSize: '0.84rem',
               }}
             >
-              <Send size={16} />
-              <span>Send Order via WhatsApp</span>
+              <Send size={15} />
+              <span>Or Order via WhatsApp</span>
             </button>
           </div>
         )}
